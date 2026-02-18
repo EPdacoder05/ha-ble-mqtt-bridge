@@ -1,0 +1,45 @@
+# Version control
+.git
+.gitignore
+
+# Documentation
+*.md
+README.md
+
+# Secrets and sensitive files
+.env
+secrets.yaml
+*.secrets
+
+# Python cache and artifacts
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+*.egg
+*.egg-info
+dist
+build
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE and editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# CI/CD
+.github
+
+# Testing
+.pytest_cache
+.coverage
+htmlcov

@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  ble-mqtt-bridge:
+    build: .
+    image: ha-ble-mqtt-bridge:latest
+    container_name: ble-mqtt-bridge
+    
+    # IMPORTANT: Network mode 'host' is required for BLE access
+    network_mode: host
+    
+    # Grant specific capabilities (NEVER use privileged: true)
+    cap_add:
+      - NET_ADMIN  # Required for Bluetooth network operations
+      - NET_RAW    # Required for raw socket access for BLE
+    
+    # Map the Bluetooth device
+    devices:
+      - /dev/hci0:/dev/hci0
+    
+    # Mount secrets file as read-only
+    volumes:
+      - ./secrets.yaml:/app/secrets.yaml:ro
+    
+    restart: unless-stopped
+    
+    # Security: Container runs as non-root user (defined in Dockerfile)
+    # No additional user override needed

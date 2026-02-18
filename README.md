@@ -46,12 +46,92 @@ mqtt_password: "your_mqtt_password"
 
 device_mac: "BE:67:00:5B:04:4A" # MAC address of your BLE device
 base_topic: "bedframe/light" # The base topic for Home Assistant integration
-Deployment
-This script is designed to run 24/7 as a systemd service on a Linux host (like a Raspberry Pi) that also runs the MQTT broker and Home Assistant. Containerizing the script and broker using docker-compose is the recommended next step for a full DevOps deployment.
+```
 
-Final Project Structure:
+## Docker Deployment
 
-Bash
+This project includes a production-ready, security-hardened Docker container for easy deployment.
+
+### Building the Docker Image
+
+```bash
+docker build -t ha-ble-mqtt-bridge:latest .
+```
+
+### Docker Security
+
+The Dockerfile implements multiple security best practices:
+
+- **Multi-stage build**: Separates build dependencies from runtime, reducing image size and attack surface
+- **Non-root user**: Application runs as `appuser` (non-root) with no shell and no home directory
+- **Minimal base image**: Uses `python:3.11-slim-bookworm` for reduced vulnerabilities
+- **Health checks**: Container includes health monitoring
+- **No privileged mode**: Uses specific capabilities instead of full privileges
+
+### Running with Docker (Secure BLE Access)
+
+**IMPORTANT**: This container needs Bluetooth access. Do **NOT** use `--privileged` mode.
+
+Instead, use specific device mappings and minimal capabilities:
+
+```bash
+docker run --net=host \
+           --device /dev/hci0 \
+           --cap-add=NET_ADMIN \
+           --cap-add=NET_RAW \
+           -v $(pwd)/secrets.yaml:/app/secrets.yaml:ro \
+           --name ble-mqtt-bridge \
+           --restart unless-stopped \
+           ha-ble-mqtt-bridge:latest
+```
+
+**Security Notes**:
+- `--net=host`: Required for BLE communication (container shares host's network namespace)
+- `--device /dev/hci0`: Maps the Bluetooth adapter (change `hci0` if you have multiple adapters)
+- `--cap-add=NET_ADMIN`: Required for Bluetooth network operations
+- `--cap-add=NET_RAW`: Required for raw socket access (BLE uses raw sockets)
+- `-v secrets.yaml:ro`: Mounts secrets as **read-only**
+- **No `--privileged`**: Never needed! Specific capabilities are sufficient and more secure
+
+### Running with Docker Compose (Recommended)
+
+The included `docker-compose.yml` provides the recommended secure configuration:
+
+```bash
+docker-compose up -d
+```
+
+The compose file automatically handles:
+- Secure BLE device access
+- Minimal required capabilities
+- Non-root execution
+- Automatic container restart
+
+### Verifying Security
+
+Check that the container is running as non-root:
+
+```bash
+docker exec ble-mqtt-bridge whoami
+# Should output: appuser
+```
+
+Check applied capabilities (should only show NET_ADMIN and NET_RAW):
+
+```bash
+docker inspect ble-mqtt-bridge | grep -A 20 "CapAdd"
+```
+
+## Deployment
+
+This script can be deployed in multiple ways:
+
+1. **Docker (Recommended)**: See the "Docker Deployment" section above for the secure, containerized approach
+2. **Systemd Service**: Run as a systemd service on a Linux host (like a Raspberry Pi) for direct hardware access
+
+### Final Project Structure:
+
+```bash
 ble-mqtt-bridge/
 ├── .git/
 ├── venv/
@@ -59,11 +139,16 @@ ble-mqtt-bridge/
 ├── ble_mqtt_bridge.py  # The main Python script
 ├── requirements.txt
 ├── secrets.yaml        # Your private credentials
+├── Dockerfile          # Security-hardened Docker image
+├── docker-compose.yml  # Recommended Docker deployment
 └── ble-mqtt-bridge.service # The systemd service file
-Home Assistant Integration
+```
+
+## Home Assistant Integration
+
 This bridge creates a standard MQTT Light entity in Home Assistant.
 
-YAML
+```yaml
 # In configuration.yaml
 mqtt:
   light:
@@ -78,7 +163,9 @@ mqtt:
       supported_color_modes: ["rgb"]
       brightness: true
       optimistic: false
-Device Discovery (for new devices)
+```
+
+## Device Discovery (for new devices)
 To find the MAC address and characteristic handle for a new ELK-BLEDOM device:
 
 Find MAC Address: Use bluetoothctl scan on.
