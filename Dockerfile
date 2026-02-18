@@ -1,7 +1,7 @@
 # ================================
 # Stage 1: Builder
 # ================================
-FROM python:3.11-slim-bookworm AS builder
+FROM python:3.11-slim-bookworm@sha256:04cd27899595a99dfe77709d96f08876bf2ee99139ee2f0fe9ac948005034e5b AS builder
 
 WORKDIR /build
 
@@ -12,7 +12,7 @@ RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
 # ================================
 # Stage 2: Runtime
 # ================================
-FROM python:3.11-slim-bookworm
+FROM python:3.11-slim-bookworm@sha256:04cd27899595a99dfe77709d96f08876bf2ee99139ee2f0fe9ac948005034e5b
 
 # OCI Labels for security and metadata
 LABEL org.opencontainers.image.title="HA BLE-MQTT Bridge"
@@ -39,10 +39,11 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Healthcheck: Verify the Python process can execute
-# This checks if the application is responsive
+# Healthcheck: Verify the BLE MQTT bridge process is running
+# Uses /proc filesystem to check if the main process (PID 1) is running
+# In a container, the main process is PID 1
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD python -c "import sys; sys.exit(0)" || exit 1
+  CMD test -f /proc/1/cmdline && grep -q ble_mqtt_bridge.py /proc/1/cmdline || exit 1
 
 # Runtime command
 ENTRYPOINT ["python", "-u", "ble_mqtt_bridge.py"]
