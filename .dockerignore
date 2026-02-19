@@ -40,6 +40,10 @@ ENV/
 .github
 
 # Testing
+tests/
 .pytest_cache
 .coverage
 htmlcov
+
+# Documentation
+docs/

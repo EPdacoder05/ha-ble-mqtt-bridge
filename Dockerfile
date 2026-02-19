@@ -23,7 +23,7 @@ LABEL org.opencontainers.image.documentation="https://github.com/EPdacoder05/ha-
 
 # Security: Create non-root user with no shell and no home directory
 RUN groupadd -r appuser && \
-    useradd -r -g appuser -s /sbin/nologin appuser
+    useradd -r -g appuser -u 1001 -s /sbin/nologin appuser
 
 WORKDIR /app
 
