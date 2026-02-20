@@ -21,6 +21,12 @@ LABEL org.opencontainers.image.authors="EPdacoder05"
 LABEL org.opencontainers.image.source="https://github.com/EPdacoder05/ha-ble-mqtt-bridge"
 LABEL org.opencontainers.image.documentation="https://github.com/EPdacoder05/ha-ble-mqtt-bridge/blob/main/README.md"
 
+# Apply all available OS security patches
+RUN apt-get update && \
+    apt-get upgrade -y --no-install-recommends && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
 # Security: Create non-root user with no shell and no home directory
 RUN groupadd -r appuser && \
     useradd -r -g appuser -u 1001 -s /sbin/nologin appuser
