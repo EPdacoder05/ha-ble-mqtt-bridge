@@ -5,6 +5,9 @@ FROM python:3.11-slim-bookworm@sha256:04cd27899595a99dfe77709d96f08876bf2ee99139
 
 WORKDIR /build
 
+# Upgrade pip and setuptools to eliminate known CVEs (e.g. CVE-2024-6345)
+RUN pip install --upgrade --no-cache-dir pip setuptools
+
 # Copy and install Python dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir --prefix=/install -r requirements.txt
@@ -35,6 +38,10 @@ WORKDIR /app
 
 # Copy Python packages from builder stage
 COPY --from=builder /install /usr/local
+
+# Upgrade pip and setuptools to eliminate known CVEs (e.g. CVE-2024-6345);
+# done after COPY so these versions always win over anything from builder
+RUN pip install --upgrade --no-cache-dir pip setuptools
 
 # Copy application code
 COPY ble_mqtt_bridge.py .
