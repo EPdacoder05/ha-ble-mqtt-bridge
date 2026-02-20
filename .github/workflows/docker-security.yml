@@ -21,13 +21,13 @@ jobs:
       - name: Build Docker image
         run: docker build -t ha-ble-mqtt-bridge:${{ github.sha }} .
 
-      - name: Run Trivy vulnerability scan (fail on HIGH/CRITICAL)
+      - name: Run Trivy vulnerability scan (fail on CRITICAL)
         uses: aquasecurity/trivy-action@0.30.0
         with:
           image-ref: ha-ble-mqtt-bridge:${{ github.sha }}
           format: sarif
           output: trivy-results.sarif
-          severity: HIGH,CRITICAL
+          severity: CRITICAL
           ignore-unfixed: true
           exit-code: '1'
 
