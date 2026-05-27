@@ -7,7 +7,9 @@ services:
     # IMPORTANT: Network mode 'host' is required for BLE access
     network_mode: host
     
-    # Grant specific capabilities (NEVER use privileged: true)
+    # Drop all capabilities and only add what's needed for BLE
+    cap_drop:
+      - ALL
     cap_add:
       - NET_ADMIN  # Required for Bluetooth network operations
       - NET_RAW    # Required for raw socket access for BLE
