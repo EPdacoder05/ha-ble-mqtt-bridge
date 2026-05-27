@@ -22,7 +22,7 @@ jobs:
         run: docker build -t ha-ble-mqtt-bridge:${{ github.sha }} .
 
       - name: Run Trivy vulnerability scan (fail on CRITICAL)
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ha-ble-mqtt-bridge:${{ github.sha }}
           format: table
@@ -32,7 +32,7 @@ jobs:
 
       - name: Generate Trivy SARIF for GitHub Security tab
         if: always()
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ha-ble-mqtt-bridge:${{ github.sha }}
           format: sarif
@@ -42,12 +42,12 @@ jobs:
 
       - name: Upload Trivy SARIF results to GitHub Security tab
         if: always()
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: trivy-results.sarif
 
       - name: Generate SBOM with Trivy
-        uses: aquasecurity/trivy-action@v0.33.1
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ha-ble-mqtt-bridge:${{ github.sha }}
           format: cyclonedx
